@@ -1,352 +1,288 @@
 <!doctype html>
-<html lang="my">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#10131a">
-  <meta name="description" content="Myanmar RecapAi — ဗီဒီယို၊ မြန်မာဘာသာပြန်နှင့် အသံထွက်ကိရိယာ">
-  <title>Myanmar RecapAi</title>
+  <meta name="theme-color" content="#101a25">
+  <meta name="description" content="A responsive weather dashboard powered by Open-Meteo.">
+  <title>Weather — Shwelin</title>
   <style>
     :root {
       color-scheme: dark;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --bg: #10131a; --surface: #191e29; --surface-2: #202735; --line: #30394a;
-      --text: #f3f5fb; --muted: #a7b0c1; --accent: #b7f0d2; --accent-ink: #12251d;
-      --danger: #ffb4ab;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --text: #f5f8fc; --muted: #a9b8c8; --line: rgba(222, 237, 255, .14);
+      --panel: rgba(255,255,255,.075); --accent: #a9e3dc;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; color: var(--text); background: radial-gradient(ellipse at 10% 0, #263d36 0, transparent 35%), var(--bg); }
-    button, input, textarea, select { font: inherit; }
-    button { color: inherit; }
-    .app { width: min(1120px, 100%); margin: 0 auto; padding: 22px clamp(14px, 3vw, 32px) 40px; }
-    header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .brand-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; color: #15241d; background: linear-gradient(140deg, #c4f4d8, #71d5ae); font-size: 1.35rem; }
-    h1 { margin: 0; font-size: clamp(1.25rem, 3vw, 1.65rem); }
-    .tagline { margin: 3px 0 0; color: var(--muted); font-size: .88rem; }
-    .badge { padding: 7px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: .78rem; white-space: nowrap; }
-    .layout { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(300px, .92fr); gap: 18px; align-items: start; }
-    .panel { min-width: 0; border: 1px solid var(--line); border-radius: 18px; background: rgba(25,30,41,.94); box-shadow: 0 18px 48px rgba(0,0,0,.2); }
-    .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 17px 18px 12px; }
-    h2 { margin: 0; font-size: 1.02rem; }
-    .subtle { color: var(--muted); font-size: .84rem; }
-    .video-frame { margin: 0 16px; overflow: hidden; border: 1px solid #252b35; border-radius: 12px; background: #050608; }
-    video { display: block; width: 100%; max-height: 60vh; min-height: 220px; aspect-ratio: 16 / 9; background: #050608; object-fit: contain; }
-    .empty-video { display: grid; place-items: center; min-height: 220px; padding: 24px; color: var(--muted); text-align: center; }
-    .video-frame.has-video .empty-video { display: none; }
-    .video-frame:not(.has-video) video { display: none; }
-    .file-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 14px 16px 17px; }
-    .button { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); cursor: pointer; font-weight: 650; }
-    .button:hover { filter: brightness(1.12); }
-    .button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid rgba(183,240,210,.62); outline-offset: 2px; }
-    .button.primary { border-color: transparent; background: var(--accent); color: var(--accent-ink); }
-    .button:disabled { opacity: .55; cursor: not-allowed; }
-    .file-name { min-width: 0; overflow-wrap: anywhere; color: var(--muted); font-size: .88rem; }
-    .field { padding: 0 18px 16px; }
-    label.field-label { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 8px; font-size: .9rem; font-weight: 650; }
-    textarea, input[type="url"], select { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: #111620; color: var(--text); }
-    textarea { min-height: 150px; padding: 12px; line-height: 1.55; resize: vertical; }
-    .output textarea { min-height: 220px; }
-    .tip { margin: 8px 0 0; color: var(--muted); font-size: .8rem; line-height: 1.5; }
-    .actions { display: flex; flex-wrap: wrap; gap: 9px; padding: 0 18px 18px; }
-    .status { min-height: 22px; margin: 0 18px 16px; color: var(--muted); font-size: .87rem; line-height: 1.5; }
-    .status.error { color: var(--danger); }
-    .settings { margin: 0 18px 18px; padding: 13px; border: 1px solid var(--line); border-radius: 12px; background: rgba(0,0,0,.12); }
-    .settings summary { cursor: pointer; font-size: .88rem; font-weight: 650; }
-    .settings-body { display: grid; gap: 12px; padding-top: 13px; }
-    .settings label { display: block; margin-bottom: 6px; color: var(--muted); font-size: .82rem; }
-    input[type="url"] { min-height: 40px; padding: 8px 10px; }
-    .settings-note { margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.5; }
-    .secondary-title { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 20px 2px 10px; }
-    .notice { margin: 14px 18px 18px; padding: 11px 12px; border-radius: 10px; background: rgba(183,240,210,.08); color: #d3e6dc; font-size: .82rem; line-height: 1.55; }
-    .hidden { display: none !important; }
-    @media (max-width: 760px) {
-      .layout { grid-template-columns: 1fr; }
-      .video-frame { margin: 0 12px; }
-      video { min-height: 180px; }
-      .panel-head { padding-left: 14px; padding-right: 14px; }
-      .field { padding-left: 14px; padding-right: 14px; }
-      .actions { padding-left: 14px; padding-right: 14px; }
-      .status { margin-left: 14px; margin-right: 14px; }
-      .settings { margin-left: 14px; margin-right: 14px; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--text);
+      background: radial-gradient(ellipse at 12% 0, #315674 0, transparent 40%), linear-gradient(145deg, #101a25, #1a2c3b 58%, #26364a);
     }
-    @media (max-width: 430px) {
-      header { align-items: flex-start; }
-      .badge { font-size: .7rem; }
-      .file-row .button { flex: 1; }
-      .actions .button { flex: 1 1 42%; }
-      .video-frame video { min-height: 160px; }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .shell { width: min(1120px, 100%); margin: 0 auto; padding: 28px clamp(16px, 4vw, 42px) 36px; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 30px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 1.05rem; font-weight: 750; }
+    .brand-mark { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 14px; background: linear-gradient(145deg, #ffe09a, #ffae79); color: #233346; font-size: 1.2rem; }
+    .search { display: flex; width: min(440px, 65%); gap: 8px; }
+    .search input { min-width: 0; flex: 1; padding: 12px 15px; border: 1px solid var(--line); border-radius: 13px; outline: none; background: rgba(7,18,30,.48); color: var(--text); }
+    .search input:focus { border-color: rgba(169,227,220,.8); box-shadow: 0 0 0 3px rgba(169,227,220,.12); }
+    .search button, .location-button, .units button { border: 1px solid var(--line); background: rgba(255,255,255,.08); cursor: pointer; }
+    .search button { padding: 0 17px; border-radius: 13px; font-weight: 650; }
+    .search button:hover, .location-button:hover, .units button:hover { background: rgba(255,255,255,.15); }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 15px; }
+    .eyebrow { color: var(--muted); font-size: .8rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    .toolbar-actions { display: flex; align-items: center; gap: 10px; }
+    .location-button { min-height: 38px; padding: 0 12px; border-radius: 10px; }
+    .units { display: flex; padding: 3px; border: 1px solid var(--line); border-radius: 11px; background: rgba(7,18,30,.35); }
+    .units button { width: 36px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); }
+    .units button[aria-pressed="true"] { background: rgba(255,255,255,.17); color: var(--text); }
+    .hero { display: grid; grid-template-columns: 1.15fr .85fr; gap: 15px; }
+    .card { border: 1px solid var(--line); border-radius: 21px; background: var(--panel); box-shadow: 0 16px 48px rgba(0,0,0,.13); backdrop-filter: blur(15px); }
+    .current { min-height: 270px; padding: clamp(22px, 4vw, 36px); }
+    .place { color: var(--muted); font-size: 1rem; }
+    .current-main { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .temperature { margin: 12px 0 3px; font-size: clamp(4.5rem, 11vw, 7rem); font-weight: 300; letter-spacing: -.09em; line-height: 1; }
+    .condition { font-size: 1.1rem; font-weight: 650; }
+    .weather-icon { font-size: clamp(5rem, 13vw, 8rem); filter: drop-shadow(0 10px 20px rgba(255,210,120,.2)); }
+    .highlow { margin-top: 12px; color: var(--muted); }
+    .details { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; padding: 17px; }
+    .detail { display: flex; min-height: 106px; flex-direction: column; justify-content: center; padding: 14px; border-radius: 15px; background: rgba(255,255,255,.055); }
+    .detail-label { color: var(--muted); font-size: .85rem; }
+    .detail-value { margin-top: 8px; font-size: 1.3rem; font-weight: 720; }
+    .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 28px 2px 13px; }
+    h2 { margin: 0; font-size: 1.12rem; }
+    .forecast { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 11px; }
+    .day { min-width: 0; padding: 16px 8px; text-align: center; }
+    .day-name { font-weight: 680; }
+    .day-icon { margin: 10px 0 8px; font-size: 1.8rem; }
+    .day-condition { min-height: 2.4em; color: var(--muted); font-size: .75rem; line-height: 1.2; }
+    .day-high { margin-top: 8px; font-weight: 720; }
+    .day-low { margin-top: 3px; color: var(--muted); font-size: .88rem; }
+    .hourly { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 10px; scrollbar-color: #70869a transparent; }
+    .hour { flex: 0 0 92px; padding: 14px 10px; text-align: center; }
+    .hour-time { color: var(--muted); font-size: .82rem; }
+    .hour-icon { margin: 8px 0; font-size: 1.5rem; }
+    .hour-temp { font-weight: 720; }
+    .status { min-height: 24px; margin: 16px 2px 0; color: var(--muted); font-size: .88rem; line-height: 1.5; }
+    .status.error { color: #ffc0b8; }
+    footer { margin-top: 22px; color: rgba(210,223,240,.66); font-size: .8rem; text-align: center; }
+    footer a { color: inherit; }
+    @media (max-width: 700px) {
+      .shell { padding-top: 19px; }
+      header { align-items: flex-start; flex-direction: column; margin-bottom: 24px; }
+      .search { width: 100%; }
+      .hero { grid-template-columns: 1fr; }
+      .current { min-height: 240px; }
+      .details { grid-template-columns: repeat(4, 1fr); padding: 11px; }
+      .detail { min-height: 88px; padding: 10px; }
+      .detail-value { font-size: 1.08rem; }
+      .forecast { grid-template-columns: repeat(5, minmax(68px, 1fr)); gap: 7px; overflow-x: auto; padding-bottom: 5px; }
+      .day { padding: 14px 5px; }
+    }
+    @media (max-width: 440px) {
+      .toolbar { align-items: flex-start; flex-direction: column; }
+      .details { grid-template-columns: 1fr 1fr; }
+      .temperature { font-size: 5rem; }
+      .weather-icon { font-size: 5rem; }
+      .location-button { min-height: 36px; }
     }
   </style>
 </head>
 <body>
-  <main class="app">
+  <main class="shell">
     <header>
-      <div class="brand">
-        <div class="brand-icon" aria-hidden="true">✦</div>
-        <div><h1>Myanmar RecapAi</h1><p class="tagline">ဗီဒီယိုမှ မြန်မာဘာသာပြန်၊ အကျဉ်းချုပ်နှင့် အသံထွက်</p></div>
-      </div>
-      <span class="badge">AI Recap Studio</span>
+      <div class="brand"><span class="brand-mark" aria-hidden="true">☀</span> Shwelin Weather</div>
+      <form class="search" id="searchForm" role="search">
+        <input id="cityInput" type="search" placeholder="Search a city…" aria-label="Search city" autocomplete="off" required>
+        <button type="submit">Search</button>
+      </form>
     </header>
 
-    <div class="layout">
-      <section class="panel" aria-labelledby="videoHeading">
-        <div class="panel-head"><h2 id="videoHeading">ဗီဒီယို</h2><span class="subtle">Local preview</span></div>
-        <div class="video-frame" id="videoFrame">
-          <div class="empty-video">ဗီဒီယိုဖိုင်ကို ရွေးချယ်ပါ<br><span class="subtle">သင့်စက်ပေါ်တွင်သာ preview ဖွင့်ပါမည်</span></div>
-          <video id="video" controls playsinline webkit-playsinline preload="metadata" aria-label="ဗီဒီယိုဖွင့်စက်"></video>
-        </div>
-        <div class="file-row">
-          <label class="button primary" for="videoFile">ဗီဒီယိုရွေးရန်</label>
-          <input class="hidden" id="videoFile" type="file" accept="video/*,.mp4,.m4v,.mov,.webm,.ogv,.ogg,.mkv,.avi,.3gp,.mpeg,.mpg,.ts">
-          <button class="button hidden" id="clearVideo" type="button">ဖယ်ရှားရန်</button>
-          <span class="file-name" id="fileName" aria-live="polite">ဖိုင်ရွေးထားခြင်း မရှိသေးပါ</span>
-        </div>
-        <p class="status" id="videoStatus" role="status" aria-live="polite">ပံ့ပိုးထားသောဖိုင်အတွင်းရှိ codec ဖြစ်မှသာ ဖွင့်နိုင်ပါမည်။</p>
-        <div class="notice">မှတ်ချက် — ဖိုင် extension များကို ရွေးချယ်ခွင့်ပေးထားသော်လည်း browser က မပံ့ပိုးသော codec/container ကို web player က အလိုအလျောက်ပြောင်းပေးနိုင်��ြင်း မရှိပါ။</div>
-      </section>
-
-      <section class="panel" aria-labelledby="textHeading">
-        <div class="panel-head"><h2 id="textHeading">ဘာသာပြန်နှင့် Recap</h2><span class="subtle">မြန်မာစာ</span></div>
-        <div class="field">
-          <label class="field-label" for="sourceText"><span>မူရင်းစာသား / Transcript</span><span class="subtle" id="sourceCount">0</span></label>
-          <textarea id="sourceText" maxlength="20000" placeholder="ဗီဒီယိုထဲက ပြောစကား သို့မဟုတ် subtitle စာသားကို ဒီမှာ ကူးထည့်ပါ…"></textarea>
-          <p class="tip">ဤစာမျက်နှာသည် ဗီဒီယိုအသံကို အလိုအလျောက် transcript မထုတ်ပါ။ Transcript ကို ထည့်ပြီး API ချိတ်ဆက်ထားပါက AI ဘာသာပြန်/အကျဉ်းချုပ် လုပ်နိုင်ပါသည်။</p>
-        </div>
-        <div class="actions">
-          <button class="button primary" id="translateButton" type="button">မြန်မာဘာသာပြန်</button>
-          <button class="button" id="recapButton" type="button">AI Recap ရေးရန်</button>
-        </div>
-        <div class="secondary-title"><h2>ထုတ်ပေးထားသော မြန်မာစာ</h2><span class="subtle" id="outputCount">0</span></div>
-        <div class="field output">
-          <label class="field-label" for="outputText"><span>ရလဒ်ကို ပြင်ဆင်နိုင်သည်</span><span class="subtle">TTS အသံထွက်</span></label>
-          <textarea id="outputText" maxlength="20000" lang="my" placeholder="ဘာသာပြန်ချက် သို့မဟုတ် အကျဉ်းချုပ်ကို ဒီမှာ ပြပါမည်…"></textarea>
-        </div>
-        <div class="actions">
-          <button class="button primary" id="speakButton" type="button">🔊 အသံထွက်</button>
-          <button class="button" id="stopButton" type="button">ရပ်ရန်</button>
-        </div>
-        <p class="status" id="appStatus" role="status" aria-live="polite">စတင်ရန် transcript ထည့်ပါ သို့မဟုတ် API endpoint тохируулаарай။</p>
-        <details class="settings">
-          <summary>AI / TTS API тохиргоо</summary>
-          <div class="settings-body">
-            <div><label for="aiEndpoint">AI endpoint (POST)</label><input id="aiEndpoint" type="url" placeholder="https://your-server.example/api/recap" autocomplete="url"></div>
-            <div><label for="ttsEndpoint">TTS endpoint (audio response)</label><input id="ttsEndpoint" type="url" placeholder="https://your-server.example/api/tts" autocomplete="url"></div>
-            <p class="settings-note">API key ကို ဒီ HTML ထဲတွင် မထည့်ပါနှင့်။ လျှို့ဝှက် key များကို သိမ်းဆည်းသော backend endpoint တစ်ခုသုံးပါ။ AI endpoint သည် JSON {"action":"translate"|"recap","text":"...","targetLanguage":"my"} ကို လက်ခံပြီး {"text":"မြန်မာစာ..."} သို့မဟုတ် {"translation":"..."} ကို ပြန်ပေးရပါမည်။ TTS endpoint သည် JSON {"text":"...","language":"my-MM"} ကို လက်ခံပြီး audio/* response ပြန်ပေးရပါမည်.</p>
-            <button class="button" id="saveSettings" type="button">Endpoint хадгалах</button>
+    <section aria-label="Current weather">
+      <div class="toolbar">
+        <div class="eyebrow">Current conditions</div>
+        <div class="toolbar-actions">
+          <button class="location-button" id="locationButton" type="button">◎ Use my location</button>
+          <div class="units" role="group" aria-label="Temperature units">
+            <button type="button" id="celsiusButton" aria-pressed="true">°C</button>
+            <button type="button" id="fahrenheitButton" aria-pressed="false">°F</button>
           </div>
-        </details>
-      </section>
-    </div>
-    <footer class="subtle" style="padding-top:18px;text-align:center;font-size:.78rem">AI ဘာသာပြန်နှင့် server-based TTS အတွက် သင့်ကိုယ်ပိုင် backend/API လိုအပ်သည်။ အသံထွက်အရည်အသွေးသည် browser နှင့် စက်တွင် ရရှိသော မြန်မာ voice များပေါ် မူတည်ပါသည်။</footer>
+        </div>
+      </div>
+      <div class="hero">
+        <article class="card current">
+          <div class="place" id="place">Loading weather…</div>
+          <div class="current-main">
+            <div>
+              <div class="temperature" id="temperature">--°</div>
+              <div class="condition" id="condition">Fetching conditions</div>
+              <div class="highlow" id="highlow">Today: --° / --°</div>
+            </div>
+            <div class="weather-icon" id="weatherIcon" aria-hidden="true">⛅</div>
+          </div>
+        </article>
+        <article class="card details" aria-label="Weather details">
+          <div class="detail"><div class="detail-label">Feels like</div><div class="detail-value" id="feelsLike">--°</div></div>
+          <div class="detail"><div class="detail-label">Humidity</div><div class="detail-value" id="humidity">--%</div></div>
+          <div class="detail"><div class="detail-label">Wind</div><div class="detail-value" id="wind">--</div></div>
+          <div class="detail"><div class="detail-label">Rain chance</div><div class="detail-value" id="rain">--%</div></div>
+        </article>
+      </div>
+    </section>
+
+    <section aria-label="Hourly forecast">
+      <div class="section-heading"><h2>Next 24 hours</h2><span class="eyebrow" id="timezoneLabel"></span></div>
+      <div class="hourly" id="hourly" aria-live="polite"></div>
+    </section>
+    <section aria-label="Five-day forecast">
+      <div class="section-heading"><h2>5-day forecast</h2></div>
+      <div class="forecast" id="forecast"></div>
+    </section>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+    <footer>Weather data by <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · Free public API, no API key required</footer>
   </main>
 
   <script>
     (() => {
-      'use strict';
       const $ = (id) => document.getElementById(id);
-      const video = $('video');
-      const videoFile = $('videoFile');
-      const videoFrame = $('videoFrame');
-      let objectUrl = null;
-      let ttsObjectUrl = null;
-      let speechVoices = [];
-      let requestController = null;
+      let unit = 'celsius';
+      let latestRequest = 0;
+      let currentData = null;
+      let currentPlace = '';
 
-      function setStatus(element, message, isError = false) {
-        element.textContent = message;
-        element.classList.toggle('error', isError);
+      const conditions = {
+        0: ['Clear sky', '☀️'], 1: ['Mainly clear', '🌤️'], 2: ['Partly cloudy', '⛅'], 3: ['Overcast', '☁️'],
+        45: ['Foggy', '🌫️'], 48: ['Rime fog', '🌫️'], 51: ['Light drizzle', '🌦️'], 53: ['Drizzle', '🌦️'], 55: ['Heavy drizzle', '🌧️'],
+        56: ['Freezing drizzle', '🌧️'], 57: ['Heavy freezing drizzle', '🌧️'], 61: ['Light rain', '🌦️'], 63: ['Rain', '🌧️'], 65: ['Heavy rain', '🌧️'],
+        66: ['Freezing rain', '🌧️'], 67: ['Heavy freezing rain', '🌧️'], 71: ['Light snow', '🌨️'], 73: ['Snow', '🌨️'], 75: ['Heavy snow', '❄️'], 77: ['Snow grains', '🌨️'],
+        80: ['Rain showers', '🌦️'], 81: ['Rain showers', '🌧️'], 82: ['Heavy showers', '🌧️'], 85: ['Snow showers', '🌨️'], 86: ['Heavy snow showers', '❄️'],
+        95: ['Thunderstorm', '⛈️'], 96: ['Thunderstorm with hail', '⛈️'], 99: ['Heavy thunderstorm', '⛈️']
+      };
+      const description = (code) => conditions[code] || ['Conditions unavailable', '🌡️'];
+      const toDisplayTemp = (value) => Math.round(unit === 'fahrenheit' ? (value * 9 / 5 + 32) : value);
+      const temp = (value) => `${toDisplayTemp(value)}°`;
+      const setStatus = (text, error = false) => {
+        $('status').textContent = text;
+        $('status').classList.toggle('error', error);
+      };
+
+      async function geocode(cityName) {
+        const url = new URL('https://geocoding-api.open-meteo.com/v1/search');
+        url.search = new URLSearchParams({ name: cityName, count: '1', language: 'en', format: 'json' }).toString();
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('City search is temporarily unavailable. Try again.');
+        const result = await response.json();
+        if (!result.results || !result.results.length) throw new Error('City not found. Check the spelling and try again.');
+        const city = result.results[0];
+        return { latitude: city.latitude, longitude: city.longitude, name: city.name, region: city.admin1 || '', country: city.country || '' };
       }
 
-      function errorMessage(code) {
-        const messages = {
-          1: 'ဗီဒီယိုဖွင့်ခြင်းကို ပယ်ဖျက်လိုက်ပါသည်။',
-          2: 'ဖိုင်ဖတ်ရှုရာတွင် အမှားဖြစ်နေပါသည်။ ဖိုင်ကို ပြန်ရွေးကြည့်ပါ။',
-          3: 'ဗီဒီယို decode မလုပ်နိုင်ပါ။ ဖိုင်ပျက်နေနိုင်သည် သို့မဟုတ် codec ကို browser က မပံ့ပိုးပါ။',
-          4: 'Media error 4 — ဤဖိုင်၏ format သို့မဟုတ် codec ကို browser က မပံ့ပိုးပါ။ MP4 (H.264/AAC) သို့မဟုတ် WebM (VP8/VP9) အဖြစ် ပြောင်းစမ်းပါ။'
-        };
-        return messages[code] || 'ဗီဒီယိုဖွင့်၍မရပါ။ အခြားဖိုင်တစ်ခုဖြင့် ထပ်စမ်းပါ။';
-      }
-
-      function releaseVideoUrl() {
-        if (objectUrl) {
-          URL.revokeObjectURL(objectUrl);
-          objectUrl = null;
-        }
-      }
-
-      function selectVideo(file) {
-        if (!file) return;
-        releaseVideoUrl();
-        objectUrl = URL.createObjectURL(file);
-        video.pause();
-        video.removeAttribute('src');
-        videoFrame.classList.remove('has-video');
-        video.load();
-        $('fileName').textContent = file.name;
-        $('clearVideo').classList.remove('hidden');
-        setStatus($('videoStatus'), 'ဖိုင်ကို စစ်ဆေးပြီး ဖွင့်နေပါသည်…');
-        video.src = objectUrl;
-        video.load();
-      }
-
-      videoFile.addEventListener('change', () => selectVideo(videoFile.files && videoFile.files[0]));
-      $('clearVideo').addEventListener('click', () => {
-        video.pause();
-        video.removeAttribute('src');
-        video.load();
-        releaseVideoUrl();
-        videoFrame.classList.remove('has-video');
-        videoFile.value = '';
-        $('fileName').textContent = 'ဖိုင်ရွေးထားခြင်း မရှိသေးပါ';
-        $('clearVideo').classList.add('hidden');
-        setStatus($('videoStatus'), 'ပံ့ပိုးထားသောဖိုင်အတွင်းရှိ codec ဖြစ်မှသာ ဖွင့်နိုင်ပါမည်။');
-      });
-      video.addEventListener('loadedmetadata', () => {
-        videoFrame.classList.add('has-video');
-        setStatus($('videoStatus'), `ဗီဒီယိုအသင့်ဖြစ်ပါပြီ · ${video.videoWidth} × ${video.videoHeight}`);
-      });
-      video.addEventListener('error', () => {
-        videoFrame.classList.remove('has-video');
-        setStatus($('videoStatus'), errorMessage(video.error ? video.error.code : 0), true);
-      });
-      window.addEventListener('pagehide', () => {
-        releaseVideoUrl();
-        if (ttsObjectUrl) URL.revokeObjectURL(ttsObjectUrl);
-      });
-
-      const source = $('sourceText');
-      const output = $('outputText');
-      source.addEventListener('input', () => $('sourceCount').textContent = `${source.value.length} chars`);
-      output.addEventListener('input', () => $('outputCount').textContent = `${output.value.length} chars`);
-
-      function savedEndpoint(key, inputId) {
-        try { $(inputId).value = localStorage.getItem(key) || ''; } catch { /* Storage may be disabled. */ }
-      }
-      savedEndpoint('recapai-ai-endpoint', 'aiEndpoint');
-      savedEndpoint('recapai-tts-endpoint', 'ttsEndpoint');
-      $('saveSettings').addEventListener('click', () => {
+      async function loadWeather(location) {
+        const requestId = ++latestRequest;
+        currentPlace = [location.name, location.region, location.country].filter(Boolean).join(', ');
+        $('place').textContent = currentPlace || 'Selected location';
+        setStatus('Loading current conditions and forecasts…');
+        const url = new URL('https://api.open-meteo.com/v1/forecast');
+        url.search = new URLSearchParams({
+          latitude: String(location.latitude), longitude: String(location.longitude),
+          current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation_probability,weather_code,wind_speed_10m',
+          hourly: 'temperature_2m,precipitation_probability,weather_code',
+          daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+          forecast_days: '5', forecast_hours: '24', timezone: 'auto', wind_speed_unit: 'kmh'
+        }).toString();
         try {
-          localStorage.setItem('recapai-ai-endpoint', $('aiEndpoint').value.trim());
-          localStorage.setItem('recapai-tts-endpoint', $('ttsEndpoint').value.trim());
-          setStatus($('appStatus'), 'Endpoint များကို ဤ browser တွင် သိမ်းဆည်းပြီးပါပြီ။');
-        } catch {
-          setStatus($('appStatus'), 'Browser storage ကို အသုံးမပြုနိုင်ပါ။ Endpoint များကို မသိမ်းဆည်းနိုင်ပါ။', true);
-        }
-      });
-
-      async function generate(action) {
-        const text = source.value.trim();
-        if (!text) {
-          setStatus($('appStatus'), 'ဘာသာပြန်ရန် သို့မဟုတ် အကျဉ်းချုပ်ရန် မူရင်းစာသားကို အရင်ထည့်ပါ။', true);
-          source.focus();
-          return;
-        }
-        const endpoint = $('aiEndpoint').value.trim();
-        if (!endpoint) {
-          setStatus($('appStatus'), 'AI endpoint မသတ်မှတ်ရသေးပါ။ Endpoint မရှိလျှင် ဤ browser က AI ဘာသာပြန်/Recap မထုတ်ပေးနိုင်ပါ။ API тохиргоо တွင် backend URL ထည့်ပါ။', true);
-          $('aiEndpoint').focus();
-          return;
-        }
-        if (requestController) requestController.abort();
-        requestController = new AbortController();
-        const button = action === 'translate' ? $('translateButton') : $('recapButton');
-        button.disabled = true;
-        setStatus($('appStatus'), action === 'translate' ? 'မြန်မာဘာသာပြန်лаж байна…' : 'AI Recap боловсруулж байна…');
-        try {
-          const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ action, text, targetLanguage: 'my' }),
-            signal: requestController.signal
-          });
-          if (!response.ok) throw new Error(`AI server returned ${response.status}. Endpoint နှင့် server ကို စစ်ဆေးပါ။`);
+          const response = await fetch(url);
+          if (!response.ok) throw new Error('Weather service is temporarily unavailable. Please try again.');
           const data = await response.json();
-          const result = data.text || data.translation || data.output || data.result;
-          if (typeof result !== 'string' || !result.trim()) throw new Error('AI server မှ မြန်မာစာမရရှိပါ။ {"text":"..."} format ဖြင့် ပြန်ပေးရန် စစ်ဆေးပါ။');
-          output.value = result.trim();
-          output.dispatchEvent(new Event('input'));
-          setStatus($('appStatus'), action === 'translate' ? 'မြန်မာဘာသာပြန်ပြီးပါပြီ။' : 'မြန်မာ Recap ပြီးပါပြီ။');
+          if (requestId !== latestRequest) return;
+          if (!data.current || !data.daily || !data.hourly) throw new Error('Weather data was incomplete. Please try again.');
+          currentData = data;
+          render(data);
+          setStatus(`Updated ${new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit', timeZone: data.timezone }).format(new Date())}`);
         } catch (error) {
-          if (error.name !== 'AbortError') setStatus($('appStatus'), error.message || 'AI ဝန်ဆောင်မှုကို ချိတ်ဆက်မရပါ။', true);
-        } finally {
-          button.disabled = false;
-          requestController = null;
+          if (requestId === latestRequest) setStatus(error.message || 'Unable to load weather. Check your internet connection.', true);
         }
       }
-      $('translateButton').addEventListener('click', () => generate('translate'));
-      $('recapButton').addEventListener('click', () => generate('recap'));
 
-      function loadVoices() {
-        if ('speechSynthesis' in window) speechVoices = window.speechSynthesis.getVoices();
-      }
-      if ('speechSynthesis' in window) {
-        loadVoices();
-        window.speechSynthesis.addEventListener?.('voiceschanged', loadVoices);
-      }
+      function render(data) {
+        const current = data.current;
+        const daily = data.daily;
+        const [label, icon] = description(current.weather_code);
+        $('place').textContent = currentPlace;
+        $('temperature').textContent = temp(current.temperature_2m);
+        $('condition').textContent = label;
+        $('weatherIcon').textContent = current.is_day ? icon : (current.weather_code === 0 ? '🌙' : icon);
+        $('feelsLike').textContent = temp(current.apparent_temperature);
+        $('humidity').textContent = `${Math.round(current.relative_humidity_2m)}%`;
+        $('wind').textContent = `${Math.round(current.wind_speed_10m)} km/h`;
+        $('rain').textContent = `${Math.round(current.precipitation_probability ?? daily.precipitation_probability_max?.[0] ?? 0)}%`;
+        $('highlow').textContent = `Today: ${temp(daily.temperature_2m_max[0])} / ${temp(daily.temperature_2m_min[0])}`;
+        $('timezoneLabel').textContent = (data.timezone || '').replaceAll('_', ' ');
 
-      async function speakWithServer(text, endpoint) {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'audio/*' },
-          body: JSON.stringify({ text, language: 'my-MM' })
+        const hourTimes = data.hourly.time;
+        let currentHourIndex = hourTimes.findIndex((time) => time >= current.time);
+        if (currentHourIndex < 0) currentHourIndex = 0;
+        const hourCards = hourTimes.slice(currentHourIndex, currentHourIndex + 24).map((time, offset) => {
+          const index = currentHourIndex + offset;
+          const [weather, weatherIcon] = description(data.hourly.weather_code[index]);
+          const hourLabel = offset === 0 ? 'Now' : new Intl.DateTimeFormat(undefined, { hour: 'numeric', timeZone: data.timezone }).format(new Date(`${time}:00`));
+          return `<article class="card hour" aria-label="${hourLabel}, ${weather}, ${toDisplayTemp(data.hourly.temperature_2m[index])} degrees">
+            <div class="hour-time">${hourLabel}</div><div class="hour-icon" aria-hidden="true">${weatherIcon}</div><div class="hour-temp">${temp(data.hourly.temperature_2m[index])}</div>
+          </article>`;
+        }).join('');
+        $('hourly').innerHTML = hourCards;
+
+        $('forecast').innerHTML = daily.time.map((date, index) => {
+          const dayName = index === 0 ? 'Today' : new Intl.DateTimeFormat(undefined, { weekday: 'short', timeZone: data.timezone }).format(new Date(`${date}T12:00:00`));
+          const [weather, weatherIcon] = description(daily.weather_code[index]);
+          const card = document.createElement('article');
+          card.className = 'card day';
+          card.setAttribute('aria-label', `${dayName}: ${weather}, high ${toDisplayTemp(daily.temperature_2m_max[index])} degrees, low ${toDisplayTemp(daily.temperature_2m_min[index])} degrees`);
+          card.innerHTML = `<div class="day-name"></div><div class="day-icon" aria-hidden="true"></div><div class="day-condition"></div><div class="day-high"></div><div class="day-low"></div>`;
+          card.querySelector('.day-name').textContent = dayName;
+          card.querySelector('.day-icon').textContent = weatherIcon;
+          card.querySelector('.day-condition').textContent = weather;
+          card.querySelector('.day-high').textContent = `↑ ${temp(daily.temperature_2m_max[index])}`;
+          card.querySelector('.day-low').textContent = `↓ ${temp(daily.temperature_2m_min[index])}`;
+          return card;
         });
-        if (!response.ok) throw new Error(`TTS server returned ${response.status}.`);
-        const blob = await response.blob();
-        if (!blob.type.startsWith('audio/')) throw new Error('TTS server က audio file မဟုတ်သော response ပြန်ပေးပါသည်။');
-        if (ttsObjectUrl) URL.revokeObjectURL(ttsObjectUrl);
-        ttsObjectUrl = URL.createObjectURL(blob);
-        const audio = new Audio(ttsObjectUrl);
-        await audio.play();
       }
 
-      $('speakButton').addEventListener('click', async () => {
-        const text = output.value.trim();
-        if (!text) {
-          setStatus($('appStatus'), 'အသံထွက်ရန် မြန်မာစာသားကို အရင်ထည့်ပါ။', true);
-          output.focus();
-          return;
-        }
-        const endpoint = $('ttsEndpoint').value.trim();
-        if (endpoint) {
-          setStatus($('appStatus'), 'TTS အသံဖန်တီးနေပါသည်…');
-          try {
-            await speakWithServer(text, endpoint);
-            setStatus($('appStatus'), 'အသံထွက်နေပါသည်။');
-          } catch (error) {
-            setStatus($('appStatus'), `${error.message} Endpoint/CORS ကို စစ်ဆေးပါ။`, true);
-          }
-          return;
-        }
-        if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
-          setStatus($('appStatus'), 'ဤ browser တွင် built-in TTS မရှိပါ။ TTS endpoint ကို ချိတ်ဆက်ပါ။', true);
-          return;
-        }
-        loadVoices();
-        if (!speechVoices.length) {
-          setStatus($('appStatus'), 'ဤစက်တွင် အသံထွက် voice မရရှိပါ။ TTS endpoint ကို ချိတ်ဆက်ပါ။', true);
-          return;
-        }
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'my-MM';
-        const burmeseVoice = speechVoices.find((voice) => /^my([-_]|$)/i.test(voice.lang));
-        if (burmeseVoice) {
-          utterance.voice = burmeseVoice;
-          setStatus($('appStatus'), `အသံထွက်နေပါသည် · ${burmeseVoice.name}`);
-        } else {
-          // Some engines ignore utterance.lang and may pronounce Burmese incorrectly.
-          utterance.voice = speechVoices.find((voice) => /^en([-_]|$)/i.test(voice.lang)) || speechVoices[0];
-          setStatus($('appStatus'), 'သင့် browser တွင် မြန်မာ voice မတွေ့ပါ။ မမှန်ကန်သောအသံထွက် ဖြစ်နိုင်သည်။ အရည်အသွေးကောင်း TTS အတွက် TTS endpoint ချိတ်ပါ။', true);
-        }
-        utterance.onend = () => { if (!burmeseVoice) return; setStatus($('appStatus'), 'အသံထွက်ပြီးပါပြီ။'); };
-        utterance.onerror = (event) => setStatus($('appStatus'), `Browser TTS error: ${event.error || 'unknown'} · TTS endpoint ကို စမ်းကြည့်ပါ။`, true);
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
+      $('searchForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const query = $('cityInput').value.trim();
+        if (!query) return;
+        setStatus('Searching for city…');
+        try { await loadWeather(await geocode(query)); }
+        catch (error) { setStatus(error.message || 'Unable to find that city.', true); }
       });
-      $('stopButton').addEventListener('click', () => {
-        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-        setStatus($('appStatus'), 'အသံထွက်ခြင်းကို ရပ်လိုက်ပါပြီ။');
+
+      $('locationButton').addEventListener('click', () => {
+        if (!navigator.geolocation) {
+          setStatus('Location is not supported by this browser. Search for a city instead.', true);
+          return;
+        }
+        setStatus('Requesting your location…');
+        navigator.geolocation.getCurrentPosition(({ coords }) => {
+          loadWeather({ latitude: coords.latitude, longitude: coords.longitude, name: 'Your location', region: '', country: '' });
+        }, (error) => {
+          const message = error.code === 1 ? 'Location permission was denied. Allow access or search for a city.' : 'Unable to get your location. Search for a city instead.';
+          setStatus(message, true);
+        }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
       });
+
+      function setUnit(nextUnit) {
+        unit = nextUnit;
+        $('celsiusButton').setAttribute('aria-pressed', String(unit === 'celsius'));
+        $('fahrenheitButton').setAttribute('aria-pressed', String(unit === 'fahrenheit'));
+        if (currentData) render(currentData);
+      }
+      $('celsiusButton').addEventListener('click', () => setUnit('celsius'));
+      $('fahrenheitButton').addEventListener('click', () => setUnit('fahrenheit'));
+
+      // Default to Yangon; city search and device location are also available.
+      loadWeather({ latitude: 16.8661, longitude: 96.1951, name: 'Yangon', region: '', country: 'Myanmar' });
     })();
   </script>
 </body>
