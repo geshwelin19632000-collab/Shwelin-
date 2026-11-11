@@ -1,92 +1,260 @@
 <!doctype html>
-<html lang="my">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#10131a">
-  <title>Shwelin Video Player</title>
+  <meta name="theme-color" content="#101827">
+  <title>Shwelin Weather</title>
   <style>
-    :root { color-scheme: dark; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --ink: #f5f8ff;
+      --muted: #a9b8cb;
+      --line: rgba(215, 229, 255, .13);
+      --panel: rgba(255, 255, 255, .075);
+      --accent: #9ce4db;
+    }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 1rem; background: #10131a; color: #f4f6fb; }
-    main { width: min(100%, 900px); }
-    h1 { font-size: clamp(1.25rem, 4vw, 1.8rem); margin: 0 0 1rem; }
-    .player { overflow: hidden; border-radius: 12px; background: #000; }
-    video { display: block; width: 100%; max-height: 72vh; aspect-ratio: 16 / 9; background: #000; object-fit: contain; }
-    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 1rem; }
-    .pick { display: inline-flex; align-items: center; min-height: 44px; padding: .65rem 1rem; border-radius: 8px; background: #3768d9; color: white; font-weight: 650; cursor: pointer; }
-    .pick:focus-within, .pick:focus { outline: 3px solid #a9c2ff; outline-offset: 3px; }
-    input[type="file"] { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-    #filename { overflow-wrap: anywhere; color: #c9d1e2; }
-    #message { min-height: 1.5em; margin: .85rem 0 0; color: #c9d1e2; line-height: 1.5; }
-    #message.error { color: #ffb4ab; }
-    .hint { margin-top: .5rem; color: #a9b2c4; font-size: .9rem; line-height: 1.5; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--ink);
+      background: radial-gradient(ellipse at 15% 0%, #274a70 0, transparent 42%), linear-gradient(145deg, #101827, #172b3b 60%, #202e44);
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .shell { width: min(1120px, 100%); margin: 0 auto; padding: 28px clamp(16px, 4vw, 42px) 36px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 32px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 1.05rem; font-weight: 750; letter-spacing: .02em; }
+    .brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px; background: linear-gradient(145deg, #f8d783, #ffae73); color: #233346; font-size: 1.2rem; }
+    .search { display: flex; width: min(420px, 60%); gap: 8px; }
+    .search input { min-width: 0; flex: 1; padding: 12px 15px; border: 1px solid var(--line); border-radius: 13px; outline: none; background: rgba(7, 18, 30, .45); color: var(--ink); }
+    .search input:focus { border-color: rgba(156, 228, 219, .75); box-shadow: 0 0 0 3px rgba(156, 228, 219, .12); }
+    .search button, .unit-toggle button, .location-button { border: 1px solid var(--line); background: rgba(255,255,255,.08); cursor: pointer; }
+    .search button { padding: 0 17px; border-radius: 13px; font-weight: 650; }
+    .search button:hover, .location-button:hover, .unit-toggle button:hover { background: rgba(255,255,255,.15); }
+    .topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    .eyebrow { color: var(--muted); font-size: .82rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .actions { display: flex; align-items: center; gap: 10px; }
+    .location-button { min-height: 38px; padding: 0 12px; border-radius: 10px; }
+    .unit-toggle { display: flex; padding: 3px; border: 1px solid var(--line); border-radius: 11px; background: rgba(7,18,30,.35); }
+    .unit-toggle button { width: 34px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); }
+    .unit-toggle button[aria-pressed="true"] { background: rgba(255,255,255,.16); color: var(--ink); }
+    .hero { display: grid; grid-template-columns: 1.25fr .75fr; gap: 16px; }
+    .card { border: 1px solid var(--line); border-radius: 22px; background: var(--panel); box-shadow: 0 16px 50px rgba(0,0,0,.12); backdrop-filter: blur(16px); }
+    .current { padding: clamp(22px, 4vw, 38px); }
+    .place { color: var(--muted); font-size: 1rem; }
+    .current-main { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .temperature { margin: 12px 0 3px; font-size: clamp(4.5rem, 11vw, 7.3rem); font-weight: 300; letter-spacing: -.09em; line-height: 1; }
+    .condition { font-size: 1.12rem; font-weight: 600; }
+    .weather-icon { font-size: clamp(5rem, 13vw, 8rem); filter: drop-shadow(0 10px 20px rgba(255,210,120,.2)); }
+    .highlow { margin-top: 12px; color: var(--muted); }
+    .details { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
+    .detail { min-height: 104px; padding: 15px; border-radius: 16px; background: rgba(255,255,255,.055); }
+    .detail-label { color: var(--muted); font-size: .86rem; }
+    .detail-value { margin-top: 9px; font-size: 1.35rem; font-weight: 700; }
+    .section-heading { display: flex; align-items: baseline; justify-content: space-between; margin: 30px 2px 13px; }
+    h2 { margin: 0; font-size: 1.15rem; }
+    .forecast { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+    .day { min-width: 0; padding: 17px 10px; text-align: center; }
+    .day-name { font-weight: 650; }
+    .day-icon { margin: 12px 0 8px; font-size: 1.9rem; }
+    .day-temp { font-weight: 700; }
+    .day-low { margin-top: 4px; color: var(--muted); font-size: .9rem; }
+    .status { min-height: 26px; margin: 17px 2px 0; color: var(--muted); font-size: .92rem; }
+    .status.error { color: #ffc0b8; }
+    footer { margin-top: 25px; color: rgba(210,223,240,.62); font-size: .8rem; text-align: center; }
+    @media (max-width: 700px) {
+      .shell { padding-top: 18px; }
+      header { align-items: flex-start; flex-direction: column; margin-bottom: 25px; }
+      .search { width: 100%; }
+      .hero { grid-template-columns: 1fr; }
+      .current { min-height: 250px; }
+      .details { grid-template-columns: repeat(4, 1fr); padding: 12px; }
+      .detail { min-height: 90px; padding: 12px 9px; }
+      .detail-value { font-size: 1.13rem; }
+      .forecast { grid-template-columns: repeat(5, minmax(64px, 1fr)); gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+      .day { padding: 14px 6px; }
+    }
+    @media (max-width: 420px) {
+      .topline { align-items: flex-start; flex-direction: column; }
+      .details { grid-template-columns: 1fr 1fr; }
+      .temperature { font-size: 5rem; }
+      .weather-icon { font-size: 5rem; }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <h1>Shwelin Video Player</h1>
-    <div class="player">
-      <video id="video" controls playsinline webkit-playsinline preload="metadata" aria-label="Video player">
-        သင့်ဘရောက်ဆာသည် ဗီဒီယိုဖွင့်ခြင်းကို မပံ့ပိုးပါ။
-      </video>
-    </div>
-    <div class="controls">
-      <label class="pick" for="videoFile">ဗီဒီယိုဖိုင်ရွေးရန်</label>
-      <input id="videoFile" type="file" accept="video/*,.mp4,.m4v,.mov,.webm,.ogv,.ogg,.mkv,.avi,.3gp,.mpeg,.mpg,.ts">
-      <span id="filename" aria-live="polite">ဖိုင်ရွေးချယ်ထားခြင်း မရှိသေးပါ</span>
-    </div>
-    <p id="message" role="status" aria-live="polite">ဗီဒီယိုဖိုင်တစ်ခု ရွေးပါ။</p>
-    <p class="hint">ဖွင့်နိုင်မှုသည် ဖိုင်အတွင်းရှိ video/audio codec နှင့် ဘရောက်ဆာပံ့ပိုးမှုအပေါ် မူတည်ပါသည်။</p>
+  <main class="shell">
+    <header>
+      <div class="brand"><span class="brand-mark" aria-hidden="true">☀</span> Shwelin Weather</div>
+      <form class="search" id="searchForm" role="search">
+        <input id="cityInput" type="search" placeholder="Search a city…" aria-label="Search city" autocomplete="off" required>
+        <button type="submit">Search</button>
+      </form>
+    </header>
+
+    <section aria-label="Current weather">
+      <div class="topline">
+        <div class="eyebrow">Current conditions</div>
+        <div class="actions">
+          <button class="location-button" id="locationButton" type="button">◎ Use my location</button>
+          <div class="unit-toggle" aria-label="Temperature units">
+            <button type="button" id="celsiusButton" aria-pressed="true">°C</button>
+            <button type="button" id="fahrenheitButton" aria-pressed="false">°F</button>
+          </div>
+        </div>
+      </div>
+      <div class="hero">
+        <article class="card current">
+          <div class="place" id="place">Loading weather…</div>
+          <div class="current-main">
+            <div>
+              <div class="temperature" id="temperature">--°</div>
+              <div class="condition" id="condition">Fetching conditions</div>
+              <div class="highlow" id="highlow">Today: --° / --°</div>
+            </div>
+            <div class="weather-icon" id="weatherIcon" aria-hidden="true">⛅</div>
+          </div>
+        </article>
+        <article class="card details" aria-label="Weather details">
+          <div class="detail"><div class="detail-label">Feels like</div><div class="detail-value" id="feelsLike">--°</div></div>
+          <div class="detail"><div class="detail-label">Humidity</div><div class="detail-value" id="humidity">--%</div></div>
+          <div class="detail"><div class="detail-label">Wind</div><div class="detail-value" id="wind">--</div></div>
+          <div class="detail"><div class="detail-label">Rain chance</div><div class="detail-value" id="rain">--%</div></div>
+        </article>
+      </div>
+    </section>
+
+    <section aria-label="Five-day forecast">
+      <div class="section-heading"><h2>5-day forecast</h2><span class="eyebrow" id="timezoneLabel"></span></div>
+      <div class="forecast" id="forecast">
+        <div class="card day">Loading…</div><div class="card day">Loading…</div><div class="card day">Loading…</div><div class="card day">Loading…</div><div class="card day">Loading…</div>
+      </div>
+    </section>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+    <footer>Weather data by <a href="https://open-meteo.com/" target="_blank" rel="noreferrer" style="color:inherit">Open-Meteo</a> · No API key required</footer>
   </main>
+
   <script>
     (() => {
-      const input = document.getElementById('videoFile');
-      const video = document.getElementById('video');
-      const filename = document.getElementById('filename');
-      const message = document.getElementById('message');
-      let currentUrl = null;
+      const $ = (id) => document.getElementById(id);
+      const status = $('status');
+      let unit = 'celsius';
+      let currentWeather = null;
+      let latestRequest = 0;
 
-      function showMessage(text, isError = false) {
-        message.textContent = text;
-        message.classList.toggle('error', isError);
+      const descriptions = {
+        0: ['Clear sky', '☀️'], 1: ['Mainly clear', '🌤️'], 2: ['Partly cloudy', '⛅'], 3: ['Overcast', '☁️'],
+        45: ['Foggy', '🌫️'], 48: ['Depositing rime fog', '🌫️'], 51: ['Light drizzle', '🌦️'], 53: ['Drizzle', '🌦️'], 55: ['Heavy drizzle', '🌧️'],
+        56: ['Freezing drizzle', '🌧️'], 57: ['Heavy freezing drizzle', '🌧️'], 61: ['Light rain', '🌦️'], 63: ['Rain', '🌧️'], 65: ['Heavy rain', '🌧️'],
+        66: ['Freezing rain', '🌧️'], 67: ['Heavy freezing rain', '🌧️'], 71: ['Light snow', '🌨️'], 73: ['Snow', '🌨️'], 75: ['Heavy snow', '❄️'],
+        77: ['Snow grains', '🌨️'],  // WMO weather interpretation codes from Open-Meteo
+        80: ['Rain showers', '🌦️'], 81: ['Rain showers', '🌧️'], 82: ['Heavy showers', '🌧️'], 85: ['Snow showers', '🌨️'], 86: ['Heavy snow showers', '❄️'],
+        95: ['Thunderstorm', '⛈️'], 96: ['Thunderstorm with hail', '⛈️'], 99: ['Heavy thunderstorm with hail', '⛈️']
+      };
+      const descriptionFor = (code) => descriptions[code] || ['Conditions unavailable', '🌡️'];
+      const convertTemp = (value) => unit === 'fahrenheit' ? Math.round(value * 9 / 5 + 32) : Math.round(value);
+      const tempText = (value) => `${convertTemp(value)}°`;
+      const setStatus = (text, error = false) => {
+        status.textContent = text;
+        status.classList.toggle('error', error);
+      };
+
+      async function searchCity(name) {
+        const url = new URL('https://geocoding-api.open-meteo.com/v1/search');
+        url.search = new URLSearchParams({ name, count: '1', language: 'en', format: 'json' });
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Could not search for that city. Try again.');
+        const data = await response.json();
+        if (!data.results || !data.results.length) throw new Error('City not found. Check the spelling and try again.');
+        const city = data.results[0];
+        return { latitude: city.latitude, longitude: city.longitude, name: city.name, country: city.country || '' };
       }
 
-      input.addEventListener('change', () => {
-        const file = input.files && input.files[0];
-        if (!file) return;
+      async function loadWeather(location) {
+        const requestId = ++latestRequest;
+        setStatus('Loading weather…');
+        $('place').textContent = `${location.name}${location.country ? `, ${location.country}` : ''}`;
+        const url = new URL('https://api.open-meteo.com/v1/forecast');
+        url.search = new URLSearchParams({
+          latitude: location.latitude,
+          longitude: location.longitude,
+          current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m',
+          daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+          forecast_days: '5', timezone: 'auto', wind_speed_unit: 'kmh'
+        });
+        try {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error('Weather service is temporarily unavailable. Please try again.');
+          const data = await response.json();
+          if (requestId !== latestRequest) return;
+          currentWeather = data;
+          renderWeather(data);
+          setStatus(`Updated ${new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit', timeZone: data.timezone }).format(new Date())}`);
+        } catch (error) {
+          if (requestId === latestRequest) setStatus(error.message || 'Unable to load weather. Check your connection and try again.', true);
+        }
+      }
 
-        // The browser's file.type may be empty or inaccurate. Use the local Blob URL
-        // directly rather than declaring a possibly incorrect <source type>.
-        if (currentUrl) URL.revokeObjectURL(currentUrl);
-        currentUrl = URL.createObjectURL(file);
-        filename.textContent = file.name;
-        showMessage('ဗီဒီယိုကို ဖွင့်ရန် ပြင်ဆင်နေသည်…');
-        video.pause();
-        video.removeAttribute('src');
-        video.src = currentUrl;
-        video.load();
+      function renderWeather(data) {
+        const c = data.current;
+        const d = data.daily;
+        const [label, icon] = descriptionFor(c.weather_code);
+        $('temperature').textContent = tempText(c.temperature_2m);
+        $('condition').textContent = label;
+        $('weatherIcon').textContent = c.is_day ? icon : (c.weather_code === 0 ? '🌙' : icon);
+        $('feelsLike').textContent = tempText(c.apparent_temperature);
+        $('humidity').textContent = `${Math.round(c.relative_humidity_2m)}%`;
+        $('wind').textContent = `${Math.round(c.wind_speed_10m)} km/h`;
+        $('rain').textContent = `${d.precipitation_probability_max?.[0] ?? 0}%`;
+        $('highlow').textContent = `Today: ${tempText(d.temperature_2m_max[0])} / ${tempText(d.temperature_2m_min[0])}`;
+        $('timezoneLabel').textContent = data.timezone.replaceAll('_', ' ');
+        $('forecast').innerHTML = d.time.map((date, index) => {
+          const dayName = index === 0 ? 'Today' : new Intl.DateTimeFormat(undefined, { weekday: 'short', timeZone: data.timezone }).format(new Date(`${date}T12:00:00`));
+          const [weather, weatherIcon] = descriptionFor(d.weather_code[index]);
+          return `<article class="card day" aria-label="${dayName}: ${weather}, high ${convertTemp(d.temperature_2m_max[index])} degrees, low ${convertTemp(d.temperature_2m_min[index])} degrees">
+            <div class="day-name">${dayName}</div><div class="day-icon" aria-hidden="true">${weatherIcon}</div>
+            <div class="day-temp">${tempText(d.temperature_2m_max[index])}</div><div class="day-low">${tempText(d.temperature_2m_min[index])}</div>
+          </article>`;
+        }).join('');
+      }
+
+      $('searchForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const query = $('cityInput').value.trim();
+        if (!query) return;
+        setStatus('Searching…');
+        try { await loadWeather(await searchCity(query)); }
+        catch (error) { setStatus(error.message, true); }
       });
 
-      video.addEventListener('loadedmetadata', () => {
-        showMessage('ဗီဒီယိုအသင့်ဖြစ်ပါပြီ။ ဖွင့်ရန် play ကိုနှိပ်ပါ။');
+      $('locationButton').addEventListener('click', () => {
+        if (!navigator.geolocation) { setStatus('Location is not supported by this browser.', true); return; }
+        setStatus('Getting your location…');
+        navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+          try {
+            // Resolve coordinates to a readable place name via the public geocoding API.
+            const url = new URL('https://geocoding-api.open-meteo.com/v1/reverse');
+            url.search = new URLSearchParams({ latitude: coords.latitude, longitude: coords.longitude, language: 'en', format: 'json' });
+            const response = await fetch(url);
+            const data = response.ok ? await response.json() : {};
+            const result = data.results && data.results[0];
+            await loadWeather({ latitude: coords.latitude, longitude: coords.longitude, name: result?.name || 'Your location', country: result?.country || '' });
+          } catch { await loadWeather({ latitude: coords.latitude, longitude: coords.longitude, name: 'Your location', country: '' }); }
+        }, () => setStatus('Could not access your location. Allow location access or search for a city.', true), { enableHighAccuracy: false, timeout: 10000 });
       });
 
-      video.addEventListener('error', () => {
-        const errorCode = video.error && video.error.code;
-        const details = {
-          1: 'ဖွင့်ခြင်းကို ရပ်တန့်လိုက်ပါသည်။',
-          2: 'ဖိုင်ကို ဖတ်ရှုရာတွင် အမှားဖြစ်နေပါသည်။ ဖိုင်ကို ပြန်ရွေးကြည့်ပါ။',
-          3: 'ဗီဒီယိုကို decode လုပ်၍မရပါ။ ဖိုင်ပျက်နေနိုင်သည် သို့မဟုတ် codec ကို ဘရောက်ဆာက မပံ့ပိုးနိုင်ပါ။',
-          4: 'ဤဖိုင်အမျိုးအစား သို့မဟုတ် ၎င်း၏ codec ကို ဘရောက်ဆာက မပံ့ပိုးပါ။ MP4 (H.264/AAC) သို့မဟုတ် WebM (VP8/VP9) အဖြစ် ပြောင်းပြီး ထပ်စမ်းပါ။'
-        };
-        showMessage(details[errorCode] || 'ဤဗီဒီယိုကို ဖွင့်၍မရပါ။ အခြားဖိုင်တစ်ခုဖြင့် ထပ်စမ်းပါ။', true);
-      });
+      function setUnit(nextUnit) {
+        unit = nextUnit;
+        $('celsiusButton').setAttribute('aria-pressed', String(unit === 'celsius'));
+        $('fahrenheitButton').setAttribute('aria-pressed', String(unit === 'fahrenheit'));
+        if (currentWeather) renderWeather(currentWeather);
+      }
+      $('celsiusButton').addEventListener('click', () => setUnit('celsius'));
+      $('fahrenheitButton').addEventListener('click', () => setUnit('fahrenheit'));
 
-      // Release the temporary local-file URL when leaving the page.
-      window.addEventListener('pagehide', () => {
-        if (currentUrl) URL.revokeObjectURL(currentUrl);
-      });
+      // Default location; visitors can search any city or use browser geolocation.
+      loadWeather({ latitude: 16.8661, longitude: 96.1951, name: 'Yangon', country: 'Myanmar' });
     })();
   </script>
 </body>
